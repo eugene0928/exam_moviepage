@@ -2,6 +2,7 @@ const appendDiv = document.querySelector("#append")
 const prevBtn = document.querySelector("#prevBtn")
 const nextBtn = document.querySelector("#nextBtn")
 let pageNum = document.querySelector("#pageNum")
+const filterBtn = document.querySelector("#filterBtn")
 
 
 /**
@@ -9,11 +10,14 @@ let pageNum = document.querySelector("#pageNum")
  */
 window.addEventListener('load', async () => {
 
-    let movies = await fetch(tokenTop + pageNum)
+    pageNum.textContent = window.localStorage.getItem("page") || '1'
+
+    let movies = await fetch(tokenTop + pageNum.textContent)
     movies = await movies.json() 
     
     renderMovies(movies.results)
     window.localStorage.setItem('token', tokenTop)
+    window.localStorage.setItem("page", pageNum.textContent)
 
     if(pageNum.textContent == '1') {
         prevBtn.disabled = true
@@ -24,6 +28,8 @@ window.addEventListener('load', async () => {
  * next button handler
  */
 nextBtn.onclick = async () => {
+
+    pageNum.textContent = window.localStorage.getItem("page")
     pageNum.textContent = (+pageNum.textContent + 1).toString()
 
     let token = window.localStorage.getItem("token")
@@ -33,6 +39,8 @@ nextBtn.onclick = async () => {
 
     renderMovies(new_movies.results)
 
+    window.localStorage.setItem("page", pageNum.textContent)
+
     prevBtn.disabled = false
 }
 
@@ -41,6 +49,7 @@ nextBtn.onclick = async () => {
  */
 prevBtn.onclick = async () => {
 
+    pageNum.textContent = window.localStorage.getItem("page")
     pageNum.textContent = (+pageNum.textContent - 1).toString()
 
     let token = window.localStorage.getItem("token")
@@ -50,9 +59,15 @@ prevBtn.onclick = async () => {
 
     renderMovies(new_movies.results)
 
+    window.localStorage.setItem("page", pageNum.textContent)
+
     if (pageNum.textContent == '1' ) {
         prevBtn.disabled = true
     }
+}
+
+filterBtn.onclick = () => {
+    console.log('aaa')
 }
 
 /**
