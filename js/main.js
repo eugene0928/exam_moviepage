@@ -3,6 +3,14 @@ const prevBtn = document.querySelector("#prevBtn")
 const nextBtn = document.querySelector("#nextBtn")
 let pageNum = document.querySelector("#pageNum")
 const filterBtn = document.querySelector("#filterBtn")
+let search = document.querySelector("#search")
+let min = document.querySelector("#min")
+let max = document.querySelector("#max")
+let score = document.querySelector("#score")
+const topMovie = document.querySelector("#topMovie")
+const popular = document.querySelector("#popular")
+const upcoming = document.querySelector("#upcoming")
+
 
 
 /**
@@ -11,14 +19,19 @@ const filterBtn = document.querySelector("#filterBtn")
 window.addEventListener('load', async () => {
 
     pageNum.textContent = window.localStorage.getItem("page") || '1'
+    let token = window.localStorage.getItem("token") || tokenTop
 
-    let movies = await fetch(tokenTop + pageNum.textContent)
+    let movies = await fetch(token + pageNum.textContent)
     movies = await movies.json() 
     
+    // call function to render movies
     renderMovies(movies.results)
-    window.localStorage.setItem('token', tokenTop)
+
+    // update base
+    window.localStorage.setItem('token', token)
     window.localStorage.setItem("page", pageNum.textContent)
 
+    // prev button active status
     if(pageNum.textContent == '1') {
         prevBtn.disabled = true
     }
@@ -37,10 +50,13 @@ nextBtn.onclick = async () => {
     let new_movies = await fetch(token + pageNum.textContent)
     new_movies = await new_movies.json()
 
+    // render movies function
     renderMovies(new_movies.results)
 
+    // update base
     window.localStorage.setItem("page", pageNum.textContent)
 
+    // to active prev button 
     prevBtn.disabled = false
 }
 
@@ -57,17 +73,121 @@ prevBtn.onclick = async () => {
     let new_movies = await fetch(token + pageNum.textContent)
     new_movies = await new_movies.json()
 
+    // render movies function 
     renderMovies(new_movies.results)
 
+    // update base
     window.localStorage.setItem("page", pageNum.textContent)
 
+    // check prev button status
     if (pageNum.textContent == '1' ) {
         prevBtn.disabled = true
     }
 }
 
-filterBtn.onclick = () => {
-    console.log('aaa')
+/**
+ * filter button handler
+ */
+filterBtn.onclick = async () => {
+    let token = window.localStorage.getItem("token")
+    let page = window.localStorage.getItem("page")
+
+    let movies = await fetch(token + page)
+    movies = await movies.json()
+
+    let searchValue = search.value.trim()
+
+    let regEx = new RegExp(searchValue, 'gi')
+    console.log(movies.results)
+
+    // find needed movies
+    let filteredMovies = movies.results.filter( el => {
+        let data = el.release_date.split("-")
+
+        if(el.title.match(regEx)?.length && !score.value && !min.value && !max.value) {
+            return el
+        }
+        else if((el.title.match(regEx)?.length && +min.value <= +data[0]) && +min.value <= +data[0] && !score.value && !max.value) {
+            return el
+        }
+        else if((el.title.match(regEx)?.length && +max.value >= +data[0]) && +max.value >= +data[0] && !score.value) {
+            return el
+        }
+        else if((el.title.match(regEx)?.length && (score.value) && +score.value <= +el.vote_average) && +score.value <= +el.vote_average) {
+            return el
+        }
+        
+     }) 
+
+     // render movies function
+    renderMovies(filteredMovies)
+
+    // clear input 
+    search.value = null
+    min.value = null
+    max.value = null
+    score.value = null
+
+}
+
+/**
+ * top kinolar button handler
+ */
+topMovie.onclick = async () => {
+    window.localStorage.setItem("page", 1)
+
+    pageNum.textContent = window.localStorage.getItem("page")
+    let movies = await fetch(tokenTop + pageNum.textContent)
+    movies = await movies.json()
+
+    // render movies function
+    renderMovies(movies.results)
+
+    // update base
+    window.localStorage.setItem("token", tokenTop)
+
+    // prev button status
+    prevBtn.disabled = true
+}
+
+/**
+ * popular button handler
+ */
+popular.onclick = async () => {
+    window.localStorage.setItem("page", 1)
+
+    pageNum.textContent = window.localStorage.getItem("page")
+    let movies = await fetch(tokenPopular + pageNum.textContent)
+    movies = await movies.json()
+
+    // render movies function
+    renderMovies(movies.results)
+
+    // update base
+    window.localStorage.setItem("token", tokenPopular)
+
+    // prev button status
+    prevBtn.disabled = true
+}
+
+/**
+ * upcoming button handler 
+ */
+upcoming.onclick = async () => {
+    window.localStorage.setItem("page", 1)
+
+    pageNum.textContent = window.localStorage.getItem("page")
+    let movies = await fetch(tokenUpComing + pageNum.textContent)
+    movies = await movies.json()
+
+    // render movies function
+    renderMovies(movies.results)
+
+    // update base
+    window.localStorage.setItem("token", tokenUpComing)
+
+    // prev button status
+    prevBtn.disabled = true
 }
 
 /**
@@ -77,9 +197,10 @@ filterBtn.onclick = () => {
  */
 function renderMovies(movies) {
 
+    // clear previous movies
     appendDiv.innerHTML = null
-    console.log(movies)
 
+    // make movie cards
     for(let movie of movies) {
         const [div1, img, div2, h3, span1, span2] = createEl('div', 'img', 'div', 'h3', 'span', 'span')
 
