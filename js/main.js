@@ -1,14 +1,65 @@
 const appendDiv = document.querySelector("#append")
+const prevBtn = document.querySelector("#prevBtn")
+const nextBtn = document.querySelector("#nextBtn")
+let pageNum = document.querySelector("#pageNum")
 
 
+/**
+ * window load handler 
+ */
 window.addEventListener('load', async () => {
 
-    let movies = await fetch(tokenTop)
+    let movies = await fetch(tokenTop + pageNum)
     movies = await movies.json() 
     
     renderMovies(movies.results)
+    window.localStorage.setItem('token', tokenTop)
+
+    if(pageNum.textContent == '1') {
+        prevBtn.disabled = true
+    }
 })
 
+/**
+ * next button handler
+ */
+nextBtn.onclick = async () => {
+    pageNum.textContent = (+pageNum.textContent + 1).toString()
+
+    let token = window.localStorage.getItem("token")
+
+    let new_movies = await fetch(token + pageNum.textContent)
+    new_movies = await new_movies.json()
+
+    renderMovies(new_movies.results)
+
+    prevBtn.disabled = false
+}
+
+/**
+ * prev button handler
+ */
+prevBtn.onclick = async () => {
+
+    pageNum.textContent = (+pageNum.textContent - 1).toString()
+
+    let token = window.localStorage.getItem("token")
+
+    let new_movies = await fetch(token + pageNum.textContent)
+    new_movies = await new_movies.json()
+
+    renderMovies(new_movies.results)
+
+    if (pageNum.textContent == '1' ) {
+        prevBtn.disabled = true
+    }
+}
+
+/**
+ * render 1page all movies
+ * @param {movies[]} movies 
+ * @returns void
+ */
 function renderMovies(movies) {
 
     appendDiv.innerHTML = null
